@@ -182,14 +182,14 @@ end
 \includegraphics[scale=0.5]{./graph/KTEST.jpg}
 \end{figure}
 
-接著建立力矩陣，題目施加了2個力分別在節點2和節點4的-y方向因此力矩陣的為下，Fr為Fresuced根據manual節點5.6為固定端計算位移矩陣用不到所以計算位移矩陣只需用到Fr。
+接著建立力矩陣，題目施加了2個力分別在節點2和節點4的-y方向因此力矩陣的為下，Fr為Freduced根據manual節點5.6為固定端計算位移矩陣用不到所以計算位移矩陣只需用到Fr。
 \begin{lstlisting}
 % 建立力矩陣
 	F=[0 0 0 -1*10^7 0 0 0 -1*10^7 0 0 0 0]';
     Fr=F(1:8,1);
 \end{lstlisting}
 
-最後建立空白位移及應力矩陣後，計算應力、應變及反作用力完成有限元素分析法部分，Qr為Qreduced原因跟Fr一樣，QF為用來計算反作用力時使用沒有將節點5.6位移歸零
+最後建立空白位移及應力矩陣後，計算應力、應變及反作用力完成有限元素分析法部分，Qr為Qreduced原因跟Fr一樣，QF為用來計算反作用力時使用沒有將節點5.6位移歸零，compute stress程式與orietation相同。
 
 \begin{lstlisting}
 	% 建立空白位移矩陣
@@ -218,6 +218,13 @@ end
     % (optional) compute reactions
     %KR=K(9:12,1:12);
     %R =KR*QF;
+\end{lstlisting}
+
+\begin{lstlisting}
+	+function sigma = compute_stress(Q, E, L, theta, node1, node2)
+    c = cosd(theta); s = sind(theta);
+    sigma = E/L*[-c -s c s]*[Q(2*node1-1,1); Q(2*node1,1); Q(2*node2-1,1); Q(2*node2,1)];
+	end
 \end{lstlisting}
 
 \textbf{Step2.使用fmincon進行最佳化}:參考mamual中fmincon部分建立1個主程式及2個function執行最佳化。\\
@@ -263,6 +270,7 @@ options = optimset ('display','off','Algorithm','sqp');
 \begin{figure}[h]
 \includegraphics[scale=1]{./graph/result.jpg}
 \end{figure}
+
 
 
 最後繪製其設計空間、可行解空間與目標函數值，程式有點冗長寫在主程式14-62行。
